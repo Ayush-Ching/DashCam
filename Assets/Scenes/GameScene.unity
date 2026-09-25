@@ -14,10 +14,10 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
-  m_Fog: 0
-  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  m_FogMode: 3
-  m_FogDensity: 0.01
+  m_Fog: 1
+  m_FogColor: {r: 0.11372549, g: 0.29411766, b: 0.28235295, a: 1}
+  m_FogMode: 2
+  m_FogDensity: 0.03
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
@@ -674,7 +674,7 @@ MonoBehaviour:
   moveSpeed: 30
   maxSpeedMult: 3
   roadWidth: 30
-  frontThreshold: 500
+  frontThreshold: 1000
   backThreshold: -25
   roadChunks:
   - {fileID: 296111578630608437, guid: 293ae85a532abf647879ee4a968a96a5, type: 3}
