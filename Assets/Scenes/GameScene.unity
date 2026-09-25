@@ -678,8 +678,14 @@ MonoBehaviour:
   backThreshold: -25
   roadChunks:
   - {fileID: 296111578630608437, guid: 293ae85a532abf647879ee4a968a96a5, type: 3}
-  leftEnvChunks: []
-  rightEnvChunks: []
+  leftEnvChunks:
+  - {fileID: 2386747440492396178, guid: 67da0156b3616d942bc108980d2b4856, type: 3}
+  - {fileID: 2386747440492396178, guid: 20ffdb2188f6797478dd345a9a3438da, type: 3}
+  - {fileID: 2386747440492396178, guid: 0de60ff83b706e14b93d6318fe6e5440, type: 3}
+  rightEnvChunks:
+  - {fileID: 2386747440492396178, guid: befeb8aaff4a3d84e9c39f4d92299ed8, type: 3}
+  - {fileID: 2386747440492396178, guid: 046407dc58e46fa4c90a19447010979d, type: 3}
+  - {fileID: 2386747440492396178, guid: 2d8aec669618201489b942e3f98761f5, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
