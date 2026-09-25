@@ -19,14 +19,6 @@ public class GameInput : MonoBehaviour {
         controls.Dispose();
     }
 
-    private void Update() {
-        if(WasLeftPressed()) Debug.Log("Left");
-        if(WasRightPressed()) Debug.Log("Right");
-        if(WasJumpPressed()) Debug.Log("Jump");
-        if(WasSlidePressed()) Debug.Log("Slide");
-        if(WasPausePressed()) Debug.Log("Pause");
-    }
-
     public bool WasLeftPressed() {
         return controls.Player.Left.WasPressedThisFrame();
     }

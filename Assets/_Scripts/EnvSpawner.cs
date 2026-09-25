@@ -7,12 +7,12 @@ public class EnvSpawner : MonoBehaviour {
     public static EnvSpawner Instance { get; private set; }
 
     [Header("Stats")]
-    [SerializeField] private float moveSpeed;
-    [SerializeField] private float maxSpeedMult;
+    [SerializeField] private float moveSpeed = 20f;
+    [SerializeField] private float maxSpeedMult = 2f;
 
     [Space]
-    [SerializeField] private float frontThreshold;
-    [SerializeField] private float backThreshold;
+    [SerializeField] private float frontThreshold = 500f;
+    [SerializeField] private float backThreshold = -50f;
 
     [Space, Header("References")]
     [SerializeField] private EnvChunk roadChunkPrefab;
