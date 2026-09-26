@@ -35,7 +35,7 @@ public class EnvSpawner : MonoBehaviour {
         InitializeChunks();
     }
 
-    private void Update() {
+    private void LateUpdate() {
         ManageRoadSpawns();
         ManageLeftEnvSpawns();
         ManageRightEnvSpawns();
