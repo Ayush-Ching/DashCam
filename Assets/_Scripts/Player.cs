@@ -7,6 +7,11 @@ public class Player : MonoBehaviour {
     [SerializeField] private float laneWidth = 10f;
 
     private int currentLane = 0;
+    private Rigidbody rb;
+
+    private void Awake() {
+        rb = GetComponent<Rigidbody>();
+    }
 
     private void Start() {
         currentLane = 0;
@@ -26,6 +31,10 @@ public class Player : MonoBehaviour {
 
         if(Mathf.Abs(transform.position.x - (currentLane * laneWidth)) < 0.001f) transform.position = targetPos;
         else transform.position = Vector3.Lerp(transform.position, targetPos, laneSwitchSpeed * Time.deltaTime);
+    }
+
+    public void Jump() {
+        
     }
 
 }
