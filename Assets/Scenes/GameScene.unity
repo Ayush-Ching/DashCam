@@ -699,8 +699,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76ff9156afb420048a9046b725e3f241, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 30
-  maxSpeedMult: 3
+  minMoveSpeed: 30
+  maxMoveSpeed: 100
+  moveSpeedIncrementRate: 1
   roadWidth: 30
   frontThreshold: 1000
   backThreshold: -25

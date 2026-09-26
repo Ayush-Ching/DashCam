@@ -5,8 +5,9 @@ public class EnvSpawner : MonoBehaviour {
     public static EnvSpawner Instance { get; private set; }
 
     [Header("Stats")]
-    [SerializeField] private float moveSpeed = 30f;
-    [SerializeField] private float maxSpeedMult = 3f;
+    [SerializeField] private float minMoveSpeed = 30f;
+    [SerializeField] private float maxMoveSpeed = 100f;
+    [SerializeField] private float moveSpeedIncrementRate = 0.2f;
     [SerializeField] private float roadWidth = 30f;
 
     [Space]
@@ -18,7 +19,7 @@ public class EnvSpawner : MonoBehaviour {
     [SerializeField] private EnvChunk[] leftEnvChunks;
     [SerializeField] private EnvChunk[] rightEnvChunks;
 
-    private float speedMult = 1f;
+    private float moveSpeed;
     private EnvChunk prevRoadChunk;
     private EnvChunk prevLeftChunk;
     private EnvChunk prevRightChunk;
@@ -29,10 +30,15 @@ public class EnvSpawner : MonoBehaviour {
         Instance = this;
 
         halfRoadWidth = roadWidth / 2.0f;
+        moveSpeed = minMoveSpeed;
     }
 
     private void Start() {
         InitializeChunks();
+    }
+
+    private void Update() {
+        moveSpeed = Mathf.Min(maxMoveSpeed, moveSpeed + moveSpeedIncrementRate * Time.deltaTime);
     }
 
     private void LateUpdate() {
@@ -99,7 +105,7 @@ public class EnvSpawner : MonoBehaviour {
     }
 
     public float MoveSpeed() {
-        return moveSpeed * speedMult;
+        return moveSpeed;
     }
 
 }
