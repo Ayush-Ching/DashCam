@@ -4,7 +4,7 @@ public class GroundCheck : MonoBehaviour {
 
     private bool isGrounded;
 
-    private void OnTriggerEnter(Collider other) {
+    private void OnTriggerStay(Collider other) {
         isGrounded = true;
     }
 

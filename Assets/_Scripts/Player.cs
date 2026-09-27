@@ -7,6 +7,7 @@ public class Player : MonoBehaviour {
     [SerializeField] private float laneSwitchSpeed = 15f;
     [SerializeField] private float laneWidth = 10f;
     [SerializeField] private float jumpForce = 10f;
+    [SerializeField] private float gravityMultiplier = 3f;
 
     [Space, Header("References")]
     [SerializeField] private GroundCheck groundCheck;
@@ -34,6 +35,8 @@ public class Player : MonoBehaviour {
     private void FixedUpdate() {
         LerpToLane();
         UpdateGrounded();
+
+        rb.AddForce(Physics.gravity * gravityMultiplier, ForceMode.Acceleration);
     }
 
     private void LerpToLane() {
@@ -47,6 +50,7 @@ public class Player : MonoBehaviour {
     public void Jump() {
         if(!isGrounded) return;
 
+        rb.linearVelocity = Vector3.zero;
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
     }
 
