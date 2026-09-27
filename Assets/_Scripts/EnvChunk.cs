@@ -4,8 +4,8 @@ public class EnvChunk : MonoBehaviour {
 
     [SerializeField] private float length;
 
-    private void Update() {
-        transform.position += -transform.forward * EnvSpawner.Instance.MoveSpeed() * Time.deltaTime;
+    private void FixedUpdate() {
+        transform.position += -transform.forward * EnvSpawner.Instance.MoveSpeed() * Time.fixedDeltaTime;
 
         if(transform.position.z < EnvSpawner.Instance.BackThreshold() - length) {
             Destroy(gameObject);
