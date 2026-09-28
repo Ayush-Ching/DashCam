@@ -96,7 +96,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9027320184770397321}
-  - component: {fileID: 71594274641389261}
   m_Layer: 0
   m_Name: Truck-flat
   m_TagString: Untagged
@@ -120,16 +119,3 @@ Transform:
   - {fileID: 653969755580941350}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &71594274641389261
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8222605393127752229}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8573803a094fc7044a3e8a820716b2b6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  length: 16.434

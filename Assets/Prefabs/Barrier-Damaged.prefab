@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7260905319235999582}
-  - component: {fileID: 3817669088682432421}
   m_Layer: 0
   m_Name: Barrier-Damaged
   m_TagString: Untagged
@@ -33,19 +32,6 @@ Transform:
   - {fileID: 3840170722895045918}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3817669088682432421
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3133485168128522405}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8573803a094fc7044a3e8a820716b2b6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  length: 2.49
 --- !u!1 &6307568807534802273
 GameObject:
   m_ObjectHideFlags: 0

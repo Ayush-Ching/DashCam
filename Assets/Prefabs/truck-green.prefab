@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 284770535788937223}
-  - component: {fileID: 7356136881741136487}
   m_Layer: 0
   m_Name: Truck-green
   m_TagString: Untagged
@@ -33,19 +32,6 @@ Transform:
   - {fileID: 192599939433671959}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &7356136881741136487
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2741739275877418719}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8573803a094fc7044a3e8a820716b2b6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  length: 16.434
 --- !u!1 &7319239637398040486
 GameObject:
   m_ObjectHideFlags: 0
