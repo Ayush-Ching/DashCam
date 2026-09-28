@@ -14,9 +14,6 @@ public class EnvSpawner : MonoBehaviour {
     [SerializeField] private float frontThreshold = 500f;
     [SerializeField] private float backThreshold = -50f;
 
-    [Space]
-    [SerializeField] private int trucksLocalSpeed = 1;
-
     [Space, Header("References")]
     [SerializeField] private EnvChunk[] roadChunks;
     [SerializeField] private EnvChunk[] leftEnvChunks;
@@ -109,10 +106,6 @@ public class EnvSpawner : MonoBehaviour {
 
     public float GetMoveSpeed() {
         return moveSpeed;
-    }
-
-    public int GetTrucksLocalSpeed() {
-        return trucksLocalSpeed;
     }
 
 }

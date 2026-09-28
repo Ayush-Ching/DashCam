@@ -2,15 +2,11 @@ using UnityEngine;
 
 public class ObstacleChunk : EnvChunk {
 
-    [SerializeField] private GameObject[] trucks;
-
-    private int trucksLocalSpeed;
+    [SerializeField] private Truck[] trucks;
 
     private void Start() {
-        trucksLocalSpeed = EnvSpawner.Instance.GetTrucksLocalSpeed();
-
-        foreach(GameObject truck in trucks) {
-            truck.transform.localPosition += new Vector3(0, 0, (transform.position.z + truck.transform.localPosition.z) * trucksLocalSpeed);
+        foreach(Truck truck in trucks) {
+            truck.transform.localPosition += new Vector3(0, 0, (transform.position.z + truck.transform.localPosition.z) * truck.GetRelativeLocalSpeed());
         }
     }
 
@@ -24,8 +20,8 @@ public class ObstacleChunk : EnvChunk {
             return;
         }
 
-        foreach(GameObject truck in trucks) {
-            truck.transform.position += distance * trucksLocalSpeed;
+        foreach(Truck truck in trucks) {
+            truck.transform.position += distance * truck.GetRelativeLocalSpeed();
         }
     }
 
