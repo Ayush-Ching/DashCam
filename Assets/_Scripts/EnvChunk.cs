@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class EnvChunk : MonoBehaviour {
 
-    [SerializeField] protected float length;
+    [SerializeField, Min(0.001f)] protected float length = 1f;
 
     protected virtual void FixedUpdate() {
         transform.position += -transform.forward * EnvSpawner.Instance.GetMoveSpeed() * Time.fixedDeltaTime;

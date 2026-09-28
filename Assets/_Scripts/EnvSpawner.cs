@@ -13,16 +13,19 @@ public class EnvSpawner : MonoBehaviour {
     [Space]
     [SerializeField] private float frontThreshold = 500f;
     [SerializeField] private float backThreshold = -50f;
+    [SerializeField] private float obstacleStartThreshold = 100f;
 
     [Space, Header("References")]
     [SerializeField] private EnvChunk[] roadChunks;
     [SerializeField] private EnvChunk[] leftEnvChunks;
     [SerializeField] private EnvChunk[] rightEnvChunks;
+    [SerializeField] private ObstacleChunk[] obstacleChunks;
 
     private float moveSpeed;
     private EnvChunk prevRoadChunk;
     private EnvChunk prevLeftChunk;
     private EnvChunk prevRightChunk;
+    private ObstacleChunk prevObstacleChunk;
 
     private float halfRoadWidth;
 
@@ -45,6 +48,7 @@ public class EnvSpawner : MonoBehaviour {
         ManageRoadSpawns();
         ManageLeftEnvSpawns();
         ManageRightEnvSpawns();
+        ManageObstacleSpawns();
     }
 
     private void InitializeChunks() {
@@ -70,6 +74,14 @@ public class EnvSpawner : MonoBehaviour {
             EnvChunk spawnedRightChunk = Instantiate(rightEnvChunks[Random.Range(0, rightEnvChunks.Length)], new Vector3(halfRoadWidth, 0, pos), Quaternion.identity);
             prevRightChunk = spawnedRightChunk;
             pos += spawnedRightChunk.GetLength();
+        }
+
+        pos = obstacleStartThreshold;
+        // spawn obstacles
+        while (obstacleChunks.Length > 0 && pos <= frontThreshold) {
+            ObstacleChunk spawnedObstacleChunk = Instantiate(obstacleChunks[Random.Range(0, obstacleChunks.Length)], new Vector3(0, 0, pos), Quaternion.identity);
+            prevObstacleChunk = spawnedObstacleChunk;
+            pos += spawnedObstacleChunk.GetLength();
         }
     }
 
@@ -97,6 +109,15 @@ public class EnvSpawner : MonoBehaviour {
         if (prevRightChunk.transform.position.z <= frontThreshold - prevRightChunk.GetLength()) {
             EnvChunk spawnedRightChunk = Instantiate(rightEnvChunks[Random.Range(0, rightEnvChunks.Length)], new Vector3(halfRoadWidth, 0, prevRightChunk.transform.position.z + prevRightChunk.GetLength()), Quaternion.identity);
             prevRightChunk = spawnedRightChunk;
+        }
+    }
+
+    private void ManageObstacleSpawns() {
+        if (obstacleChunks.Length <= 0) return;
+
+        if (prevObstacleChunk.transform.position.z <= frontThreshold - prevObstacleChunk.GetLength()) {
+            ObstacleChunk spawnedObstacleChunk = Instantiate(obstacleChunks[Random.Range(0, obstacleChunks.Length)], new Vector3(0, 0, prevObstacleChunk.transform.position.z + prevObstacleChunk.GetLength()), Quaternion.identity);
+            prevObstacleChunk = spawnedObstacleChunk;
         }
     }
 
