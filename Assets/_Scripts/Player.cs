@@ -73,6 +73,10 @@ public class Player : MonoBehaviour {
         rb.AddForce(Physics.gravity * gravityMultiplier, ForceMode.Acceleration);
     }
 
+    private void OnCollisionEnter(Collision collision) {
+        if (collision.gameObject.tag == "Death") GameManager.Instance.GameOver();
+    }
+
     private void LerpToLane() {
         Vector3 targetPos = new Vector3(currentLane * laneWidth, rb.position.y, rb.position.z);
 
