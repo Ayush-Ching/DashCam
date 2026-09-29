@@ -27,8 +27,6 @@ public class GameManager : MonoBehaviour {
     }
 
     public void GameOver() {
-        Debug.Log("gg");
-
         Time.timeScale = 0f;
         loseMenu.SetActive(true);
     }
