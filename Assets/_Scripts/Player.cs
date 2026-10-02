@@ -22,17 +22,24 @@ public class Player : MonoBehaviour {
     private CapsuleCollider capsuleCollider;
     private float initCapHeight;
 
+    private int runBlendHash;
+    private int jumpHash;
+    private int rollHash;
+
     private void Awake() {
         rb = GetComponent<Rigidbody>();
         capsuleCollider = GetComponent<CapsuleCollider>();
-        initCapHeight = capsuleCollider.height;
-
     }
 
     private void Start() {
         currentLane = 0;
         isRolling = false;
         rollTimer = 0f;
+        initCapHeight = capsuleCollider.height;
+
+        runBlendHash = Animator.StringToHash("RunBlend");
+        jumpHash = Animator.StringToHash("Jump");
+        rollHash = Animator.StringToHash("Roll");
     }
 
     private void Update() {
@@ -57,6 +64,8 @@ public class Player : MonoBehaviour {
             capsuleCollider.height = initCapHeight;
             capsuleCollider.center = new Vector3(0, initCapHeight / 2, 0);
         }
+
+        animator.SetFloat(runBlendHash, EnvSpawner.Instance.GetSpeedFactor());
     }
 
     private void FixedUpdate() {
@@ -81,7 +90,7 @@ public class Player : MonoBehaviour {
     public void Jump() {
         if(!isGrounded) return;
 
-        animator.SetTrigger("Jump");
+        animator.SetTrigger(jumpHash);
 
         if (isRolling) isRolling = false;
 
@@ -96,7 +105,7 @@ public class Player : MonoBehaviour {
     private void Roll() {
         if (isRolling) return;
 
-        animator.SetTrigger("Roll");
+        animator.SetTrigger(rollHash);
 
         rb.linearVelocity = Vector3.zero;
         rb.AddForce(-Vector3.up * jumpForce, ForceMode.Impulse);
