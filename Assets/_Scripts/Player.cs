@@ -11,8 +11,6 @@ public class Player : MonoBehaviour {
 
     [Space, Header("References")]
     [SerializeField] private GroundCheck groundCheck;
-    [SerializeField] private GameObject longBod;
-    [SerializeField] private GameObject rollBod;
 
     private int currentLane = 0;
     private bool isGrounded;
@@ -54,15 +52,9 @@ public class Player : MonoBehaviour {
         if (isSliding) {
             capsuleCollider.height = initCapHeight / 2;
             capsuleCollider.center = new Vector3(0, initCapHeight / 4, 0);
-
-            longBod.SetActive(false);
-            rollBod.SetActive(true);
         } else {
             capsuleCollider.height = initCapHeight;
             capsuleCollider.center = new Vector3(0, initCapHeight / 2, 0);
-
-            longBod.SetActive(true);
-            rollBod.SetActive(false);
         }
     }
 
