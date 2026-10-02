@@ -81,6 +81,8 @@ public class Player : MonoBehaviour {
     public void Jump() {
         if(!isGrounded) return;
 
+        animator.SetTrigger("Jump");
+
         if (isRolling) isRolling = false;
 
         rb.linearVelocity = Vector3.zero;
@@ -93,6 +95,8 @@ public class Player : MonoBehaviour {
 
     private void Roll() {
         if (isRolling) return;
+
+        animator.SetTrigger("Roll");
 
         rb.linearVelocity = Vector3.zero;
         rb.AddForce(-Vector3.up * jumpForce, ForceMode.Impulse);

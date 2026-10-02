@@ -2271,8 +2271,9 @@ MonoBehaviour:
   laneWidth: 10
   jumpForce: 25
   gravityMultiplier: 5
-  slideDuration: 0.75
+  rollDuration: 1
   groundCheck: {fileID: 1328657086}
+  animator: {fileID: 353468429}
 --- !u!54 &1381309107
 Rigidbody:
   m_ObjectHideFlags: 0
