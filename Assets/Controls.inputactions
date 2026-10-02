@@ -34,7 +34,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Slide",
+                    "name": "Roll",
                     "type": "Button",
                     "id": "ff6a4f4a-ffba-4d42-9ef9-e074c5ce276f",
                     "expectedControlType": "",
@@ -126,7 +126,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Slide",
+                    "action": "Roll",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -137,7 +137,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Slide",
+                    "action": "Roll",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

@@ -32,8 +32,8 @@ public class GameInput : MonoBehaviour {
         return controls.Player.Jump.WasPressedThisFrame();
     }
 
-    public bool WasSlidePressed() {
-        return controls.Player.Slide.WasPressedThisFrame();
+    public bool WasRollPressed() {
+        return controls.Player.Roll.WasPressedThisFrame();
     }
 
     public bool WasPausePressed() {

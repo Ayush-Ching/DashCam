@@ -7,15 +7,16 @@ public class Player : MonoBehaviour {
     [SerializeField] private float laneWidth = 10f;
     [SerializeField] private float jumpForce = 10f;
     [SerializeField] private float gravityMultiplier = 3f;
-    [SerializeField] private float slideDuration = 1f;
+    [SerializeField] private float rollDuration = 1f;
 
     [Space, Header("References")]
     [SerializeField] private GroundCheck groundCheck;
+    [SerializeField] private Animator animator;
 
     private int currentLane = 0;
     private bool isGrounded;
-    private bool isSliding;
-    private float slideTimer;
+    private bool isRolling;
+    private float rollTimer;
 
     private Rigidbody rb;
     private CapsuleCollider capsuleCollider;
@@ -30,8 +31,8 @@ public class Player : MonoBehaviour {
 
     private void Start() {
         currentLane = 0;
-        isSliding = false;
-        slideTimer = 0f;
+        isRolling = false;
+        rollTimer = 0f;
     }
 
     private void Update() {
@@ -39,17 +40,17 @@ public class Player : MonoBehaviour {
         if (GameInput.Instance.WasRightPressed()) currentLane = Mathf.Min(1, currentLane + 1);
 
         if (GameInput.Instance.WasJumpPressed()) Jump();
-        if (GameInput.Instance.WasSlidePressed()) Slide();
+        if (GameInput.Instance.WasRollPressed()) Roll();
 
-        if(isSliding) {
-            slideTimer += Time.deltaTime;
-            if(slideTimer > slideDuration) {
-                slideTimer = 0;
-                isSliding = false;
+        if(isRolling) {
+            rollTimer += Time.deltaTime;
+            if(rollTimer > rollDuration) {
+                rollTimer = 0;
+                isRolling = false;
             }
         }
 
-        if (isSliding) {
+        if (isRolling) {
             capsuleCollider.height = initCapHeight / 2;
             capsuleCollider.center = new Vector3(0, initCapHeight / 4, 0);
         } else {
@@ -80,7 +81,7 @@ public class Player : MonoBehaviour {
     public void Jump() {
         if(!isGrounded) return;
 
-        if (isSliding) isSliding = false;
+        if (isRolling) isRolling = false;
 
         rb.linearVelocity = Vector3.zero;
         rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
@@ -90,14 +91,14 @@ public class Player : MonoBehaviour {
         isGrounded = groundCheck.IsGrounded();
     }
 
-    private void Slide() {
-        if (isSliding) return;
+    private void Roll() {
+        if (isRolling) return;
 
         rb.linearVelocity = Vector3.zero;
         rb.AddForce(-Vector3.up * jumpForce, ForceMode.Impulse);
 
-        isSliding = true;
-        slideTimer = 0f;
+        isRolling = true;
+        rollTimer = 0f;
     }
 
 }
