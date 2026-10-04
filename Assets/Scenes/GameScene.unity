@@ -3172,6 +3172,7 @@ MonoBehaviour:
   frontThreshold: 1000
   backThreshold: -25
   obstacleStartThreshold: 100
+  obstacleSpeedGapFactor: 0.75
   roadChunks:
   - {fileID: 296111578630608437, guid: 293ae85a532abf647879ee4a968a96a5, type: 3}
   leftEnvChunks:

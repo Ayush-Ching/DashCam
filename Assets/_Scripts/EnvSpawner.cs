@@ -14,6 +14,7 @@ public class EnvSpawner : MonoBehaviour {
     [SerializeField] private float frontThreshold = 500f;
     [SerializeField] private float backThreshold = -50f;
     [SerializeField] private float obstacleStartThreshold = 100f;
+    [SerializeField, Range(0.3f, 1f)] private float obstacleSpeedGapFactor = 0.75f;
 
     [Space, Header("References")]
     [SerializeField] private EnvChunk[] roadChunks;
@@ -134,7 +135,7 @@ public class EnvSpawner : MonoBehaviour {
     }
 
     public float GetObstacleLengthFactor() {
-        return moveSpeed / minMoveSpeed;
+        return Mathf.Max(1f, obstacleSpeedGapFactor * (moveSpeed / minMoveSpeed));
     }
 
 }
