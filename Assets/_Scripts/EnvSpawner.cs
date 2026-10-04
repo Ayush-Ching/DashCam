@@ -129,8 +129,12 @@ public class EnvSpawner : MonoBehaviour {
         return moveSpeed;
     }
 
-    public float GetSpeedFactor() {
+    public float GetSpeedAnimFactor() {
         return (moveSpeed - minMoveSpeed) / (maxMoveSpeed - minMoveSpeed);
+    }
+
+    public float GetObstacleLengthFactor() {
+        return moveSpeed / minMoveSpeed;
     }
 
 }

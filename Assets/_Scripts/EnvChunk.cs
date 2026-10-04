@@ -13,7 +13,7 @@ public class EnvChunk : MonoBehaviour {
     }
 
 
-    public float GetLength() {
+    public virtual float GetLength() {
         return length;
     }
 

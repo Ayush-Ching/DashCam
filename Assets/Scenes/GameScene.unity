@@ -3184,6 +3184,7 @@ MonoBehaviour:
   - {fileID: 2386747440492396178, guid: 2d8aec669618201489b942e3f98761f5, type: 3}
   obstacleChunks:
   - {fileID: 4289541242072887085, guid: 82c2c390ca6ea6e429e35cd4b843d89a, type: 3}
+  - {fileID: 4289541242072887085, guid: ac3ec45c9591c254abc9a9b67d7b9691, type: 3}
 --- !u!1 &9171100236271347
 GameObject:
   m_ObjectHideFlags: 0

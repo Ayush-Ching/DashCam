@@ -65,7 +65,7 @@ public class Player : MonoBehaviour {
             capsuleCollider.center = new Vector3(0, initCapHeight / 2, 0);
         }
 
-        animator.SetFloat(runBlendHash, EnvSpawner.Instance.GetSpeedFactor());
+        animator.SetFloat(runBlendHash, EnvSpawner.Instance.GetSpeedAnimFactor());
     }
 
     private void FixedUpdate() {

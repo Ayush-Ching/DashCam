@@ -4,7 +4,17 @@ public class ObstacleChunk : EnvChunk {
 
     [SerializeField] private Truck[] trucks;
 
+    protected float lengthFactor = 1f;
+
     private void Start() {
+        lengthFactor = EnvSpawner.Instance.GetObstacleLengthFactor();
+
+        foreach(Transform child in GetComponentsInChildren<Transform>()) {
+            if(child == transform) continue;
+
+            child.transform.localPosition = new Vector3(child.transform.localPosition.x, child.transform.localPosition.y, child.transform.localPosition.z * lengthFactor);
+        }
+
         foreach(Truck truck in trucks) {
             truck.transform.localPosition += new Vector3(0, 0, (transform.position.z + truck.transform.localPosition.z) * truck.GetRelativeLocalSpeed());
         }
@@ -23,6 +33,10 @@ public class ObstacleChunk : EnvChunk {
         foreach(Truck truck in trucks) {
             truck.transform.position += distance * truck.GetRelativeLocalSpeed();
         }
+    }
+
+    public override float GetLength() {
+        return length * lengthFactor;
     }
 
 }
