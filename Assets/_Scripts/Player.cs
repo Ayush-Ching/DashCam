@@ -12,6 +12,7 @@ public class Player : MonoBehaviour {
     [Space, Header("References")]
     [SerializeField] private GroundCheck groundCheck;
     [SerializeField] private Animator animator;
+    [SerializeField] private PoseGestureClassifier classifier;
 
     private int currentLane = 0;
     private bool isGrounded;
@@ -25,6 +26,18 @@ public class Player : MonoBehaviour {
     private int runBlendHash;
     private int jumpHash;
     private int rollHash;
+
+    private void OnEnable() {
+        classifier.LaneChanged += OnLaneChanged;
+        classifier.JumpDetected += OnJump;
+        classifier.DuckChanged += OnDuckChanged;
+    }
+
+    private void OnDisable() {
+        classifier.LaneChanged -= OnLaneChanged;
+        classifier.JumpDetected -= OnJump;
+        classifier.DuckChanged -= OnDuckChanged;
+    }
 
     private void Awake() {
         rb = GetComponent<Rigidbody>();
@@ -77,6 +90,25 @@ public class Player : MonoBehaviour {
 
     private void OnCollisionEnter(Collision collision) {
         if (collision.gameObject.tag == "Death") GameManager.Instance.GameOver();
+    }
+
+    private void OnLaneChanged(int lane) {
+        // lane: -1 = left, 0 = centre, +1 = right
+        // Call your existing lane movement method here.
+        Debug.Log($"Target lane: {lane}");
+        currentLane = lane;
+    }
+
+    private void OnJump() {
+        // Call your existing grounded jump method here.
+        Debug.Log("Jump detected");
+        Jump();
+    }
+
+    private void OnDuckChanged(bool ducking) {
+        // true = begin slide; false = end slide.
+        Debug.Log($"Ducking: {ducking}");
+        Roll();
     }
 
     private void LerpToLane() {

@@ -14,8 +14,9 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
   public class PoseLandmarkerRunner : VisionTaskApiRunner<PoseLandmarker>
   {
     [SerializeField] private PoseLandmarkerResultAnnotationController _poseLandmarkerResultAnnotationController;
+    [SerializeField] private PoseGestureClassifier gestureClassifier;
 
-    private Experimental.TextureFramePool _textureFramePool;
+        private Experimental.TextureFramePool _textureFramePool;
 
     public readonly PoseLandmarkDetectionConfig config = new PoseLandmarkDetectionConfig();
 
@@ -163,6 +164,8 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
     {
       _poseLandmarkerResultAnnotationController.DrawLater(result);
       DisposeAllMasks(result);
+
+      OnPoseLandmarkDetectionOutput_GestureClass(result, image, timestamp);
     }
 
     private void DisposeAllMasks(PoseLandmarkerResult result)
@@ -175,5 +178,91 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
         }
       }
     }
-  }
+
+
+
+        private readonly object poseLock = new object();
+
+        private Vector2 pendingLeftShoulder;
+        private Vector2 pendingRightShoulder;
+        private Vector2 pendingLeftHip;
+        private Vector2 pendingRightHip;
+
+        private bool pendingPoseValid;
+        private bool hasPendingPose;
+
+        private void OnPoseLandmarkDetectionOutput_GestureClass(
+            PoseLandmarkerResult result,
+            Image image,
+            long timestamp) {
+            bool valid = result.poseLandmarks != null &&
+                         result.poseLandmarks.Count > 0;
+
+            Vector2 leftShoulder = default;
+            Vector2 rightShoulder = default;
+            Vector2 leftHip = default;
+            Vector2 rightHip = default;
+
+            if (valid) {
+                var landmarks = result.poseLandmarks[0].landmarks;
+
+                if (landmarks == null || landmarks.Count <= 24) {
+                    valid = false;
+                }
+                else {
+                    // MediaPipe Pose landmark indices.
+                    var ls = landmarks[11];
+                    var rs = landmarks[12];
+                    var lh = landmarks[23];
+                    var rh = landmarks[24];
+
+                    leftShoulder = new Vector2(ls.x, ls.y);
+                    rightShoulder = new Vector2(rs.x, rs.y);
+                    leftHip = new Vector2(lh.x, lh.y);
+                    rightHip = new Vector2(rh.x, rh.y);
+                }
+            }
+
+            lock (poseLock) {
+                pendingPoseValid = valid;
+
+                if (valid) {
+                    pendingLeftShoulder = leftShoulder;
+                    pendingRightShoulder = rightShoulder;
+                    pendingLeftHip = leftHip;
+                    pendingRightHip = rightHip;
+                }
+
+                hasPendingPose = true;
+            }
+
+            // Keep the sample's existing annotation drawing and
+            // result/mask cleanup code here, unchanged.
+        }
+
+        private void Update() {
+            Vector2 ls, rs, lh, rh;
+            bool valid;
+
+            lock (poseLock) {
+                if (!hasPendingPose)
+                    return;
+
+                ls = pendingLeftShoulder;
+                rs = pendingRightShoulder;
+                lh = pendingLeftHip;
+                rh = pendingRightHip;
+                valid = pendingPoseValid;
+
+                hasPendingPose = false;
+            }
+
+            if (gestureClassifier != null) {
+                gestureClassifier.ProcessPose(ls, rs, lh, rh, valid);
+            }
+        }
+
+
+
+    }
 }
