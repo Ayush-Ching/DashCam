@@ -20,8 +20,8 @@ public class ObstacleChunk : EnvChunk {
         }
     }
 
-    protected override void FixedUpdate() {
-        Vector3 distance = -transform.forward * EnvSpawner.Instance.GetMoveSpeed() * Time.fixedDeltaTime;
+    protected override void Update() {
+        Vector3 distance = -transform.forward * EnvSpawner.Instance.GetMoveSpeed() * Time.deltaTime;
 
         transform.position += distance;
 

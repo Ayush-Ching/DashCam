@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 256a21da90673c64f998de29eec9cb99, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  length: 50
+  length: 60
   trucks:
   - {fileID: 4040408209499957208}
 --- !u!1001 &279562516065876541
