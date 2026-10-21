@@ -3,59 +3,90 @@ using System;
 using UnityEngine;
 
 public class PoseGestureClassifier : MonoBehaviour {
-    [Header("Lane detection")]
-    [Tooltip("Half-width of the centre lane around x = 0.5.")]
-    [Range(0.10f, 0.40f)]
+    [Header("Grid / UI")]
+    public float panelWidth = 640f;
+    public float panelHeight = 360f;
+
+    [Tooltip("The RectTransform of the camera preview panel.")]
+    [SerializeField] private RectTransform panelRect;
+
+    [Tooltip("UI marker that follows the detected body centre.")]
+    [SerializeField] private RectTransform bodyCentreUI;
+
+    [Tooltip("Mirror the displayed X coordinate if the preview is mirrored.")]
+    [SerializeField] private bool mirrorX = false;
+
+    public Vector2 BodyCenterNormalized { get; private set; }
+        = new Vector2(0.5f, 0.5f);
+
+    public Vector2 BodyCenterPixels { get; private set; }
+        = new Vector2(320f, 180f);
+
+    // -1 = left, 0 = centre, +1 = right.
+    public int CurrentLane { get; private set; } = 0;
+
+    // 0 = top/jump, 1 = middle/normal, 2 = bottom/duck.
+    public int CurrentRow { get; private set; } = 1;
+
+    [Header("Lane boundaries")]
+    [Tooltip("Half-width of the centre lane.")]
+    [Range(0.05f, 0.40f)]
     public float laneBoundary = 0.18f;
 
-    [Tooltip("Extra margin to prevent lane jitter.")]
+    [Tooltip("Extra margin for lane stability.")]
     [Range(0f, 0.10f)]
-    public float laneHysteresis = 0.04f;
+    public float laneHysteresis = 0.02f;
 
-    public float laneDwellTime = 0.12f;
-
-    [Header("Gesture thresholds")]
+    [Header("Jump and duck boundaries")]
+    [Tooltip("Jump triggers when the body centre rises above this Y. " +
+             "Smaller values require a higher upward movement.")]
     [Range(0.05f, 0.5f)]
-    public float jumpRiseThreshold = 0.12f;
+    public float jumpYBoundary = 0.30f;
 
-    [Range(0.2f, 0.98f)]
-    public float duckRatioThreshold = 0.78f;
+    [Tooltip("Duck triggers when the body centre falls below this Y. " +
+             "Larger values require a deeper downward movement.")]
+    [Range(0.55f, 0.95f)]
+    public float duckYBoundary = 0.70f;
 
-    public float gestureCooldown = 0.65f;
-    public float smoothing = 12f;
+    [Tooltip("Extra margin for stable row transitions.")]
+    [Range(0f, 0.10f)]
+    public float rowHysteresis = 0.025f;
+
+    [Tooltip("Time the body must remain in a new cell.")]
+    public float gridDwellTime = 0.08f;
+
+    [Header("Smoothing")]
+    public float smoothing = 18f;
 
     [Header("Calibration")]
     public float calibrationTime = 1.5f;
 
-    // Lane convention: -1 = left, 0 = centre, +1 = right.
     public event Action<int> LaneChanged;
     public event Action JumpDetected;
     public event Action<bool> DuckChanged;
 
-    public int CurrentLane { get; private set; } = 0;
     public bool IsDucking { get; private set; }
     public bool IsCalibrated { get; private set; }
 
-    float neutralTorso;
-    float neutralHipY;
-
     float filteredX = 0.5f;
-    float filteredTorso;
-    float filteredHipY;
+    float filteredY = 0.5f;
 
     float calibrationElapsed;
-    float calibrationTorsoSum;
-    float calibrationHipSum;
     int calibrationSamples;
 
     int candidateLane;
-    float laneCandidateElapsed;
+    int candidateRow;
+    float gridCandidateElapsed;
 
-    float lastJumpTime = -100f;
-    float lastDuckTime = -100f;
-
-    bool wasAboveJumpThreshold;
     bool poseWasValid;
+
+    void Awake() {
+        if (bodyCentreUI != null && panelRect == null)
+            panelRect = bodyCentreUI.parent as RectTransform;
+
+        candidateLane = CurrentLane;
+        candidateRow = CurrentRow;
+    }
 
     public void ProcessPose(
         Vector2 leftShoulder,
@@ -65,160 +96,202 @@ public class PoseGestureClassifier : MonoBehaviour {
         bool valid) {
         if (!valid) {
             poseWasValid = false;
-            laneCandidateElapsed = 0f;
+            gridCandidateElapsed = 0f;
             return;
         }
 
         float dt = Mathf.Max(Time.deltaTime, 0.001f);
 
-        float shoulderX =
-            (leftShoulder.x + rightShoulder.x) * 0.5f;
+        Vector2 shoulderCenter =
+            (leftShoulder + rightShoulder) * 0.5f;
 
-        float shoulderY =
-            (leftShoulder.y + rightShoulder.y) * 0.5f;
+        Vector2 hipCenter =
+            (leftHip + rightHip) * 0.5f;
 
-        float hipX =
-            (leftHip.x + rightHip.x) * 0.5f;
-
-        float hipY =
-            (leftHip.y + rightHip.y) * 0.5f;
-
-        float bodyX = (shoulderX + hipX) * 0.5f;
-        float torso = Mathf.Abs(hipY - shoulderY);
+        Vector2 bodyCenter =
+            (shoulderCenter + hipCenter) * 0.5f;
 
         if (!poseWasValid) {
-            filteredX = bodyX;
-            filteredHipY = hipY;
-            filteredTorso = torso;
+            filteredX = bodyCenter.x;
+            filteredY = bodyCenter.y;
             poseWasValid = true;
         }
         else {
             float a = 1f - Mathf.Exp(-smoothing * dt);
 
-            filteredX = Mathf.Lerp(filteredX, bodyX, a);
-            filteredHipY = Mathf.Lerp(filteredHipY, hipY, a);
-            filteredTorso = Mathf.Lerp(filteredTorso, torso, a);
+            filteredX = Mathf.Lerp(filteredX, bodyCenter.x, a);
+            filteredY = Mathf.Lerp(filteredY, bodyCenter.y, a);
         }
+
+        float displayX = mirrorX ? 1f - filteredX : filteredX;
+
+        BodyCenterNormalized = new Vector2(displayX, filteredY);
+
+        BodyCenterPixels = new Vector2(
+            displayX * panelWidth,
+            filteredY * panelHeight
+        );
+
+        UpdateBodyCentreUI();
 
         if (!IsCalibrated) {
             Calibrate(dt);
             return;
         }
 
-        UpdateLane(dt);
-        UpdateJump();
-        UpdateDuck();
+        UpdateGrid(dt);
+    }
+
+    void UpdateBodyCentreUI() {
+        if (bodyCentreUI == null || panelRect == null)
+            return;
+
+        Rect rect = panelRect.rect;
+
+        Vector2 localPoint = new Vector2(
+            Mathf.Lerp(rect.xMin, rect.xMax, BodyCenterNormalized.x),
+            Mathf.Lerp(rect.yMax, rect.yMin, BodyCenterNormalized.y)
+        );
+
+        if (bodyCentreUI.parent == panelRect) {
+            bodyCentreUI.anchoredPosition = localPoint;
+        }
+        else {
+            Vector3 worldPoint = panelRect.TransformPoint(localPoint);
+            bodyCentreUI.position = worldPoint;
+        }
     }
 
     void Calibrate(float dt) {
         calibrationElapsed += dt;
-        calibrationTorsoSum += filteredTorso;
-        calibrationHipSum += filteredHipY;
         calibrationSamples++;
 
         if (calibrationElapsed < calibrationTime ||
             calibrationSamples == 0)
             return;
 
-        neutralTorso =
-            calibrationTorsoSum / calibrationSamples;
-
-        neutralHipY =
-            calibrationHipSum / calibrationSamples;
-
-        IsCalibrated = neutralTorso > 0.01f;
+        IsCalibrated = true;
 
         Debug.Log(
-            $"Pose calibrated: torso={neutralTorso:F3}, " +
-            $"hipY={neutralHipY:F3}");
+            $"Grid calibrated. Body centre = " +
+            $"{BodyCenterPixels.x:F0}, {BodyCenterPixels.y:F0}");
     }
 
     int GetDesiredLane() {
-        float leftThreshold = 0.5f - laneBoundary;
-        float rightThreshold = 0.5f + laneBoundary;
+        float leftBoundary = 0.5f - laneBoundary;
+        float rightBoundary = 0.5f + laneBoundary;
 
-        // Hysteresis makes it harder to leave the current lane
-        // than to remain inside it.
         switch (CurrentLane) {
             case -1:
-                if (filteredX > rightThreshold + laneHysteresis)
+                if (filteredX > rightBoundary + laneHysteresis)
                     return 1;
-                if (filteredX > leftThreshold + laneHysteresis)
+
+                if (filteredX > leftBoundary + laneHysteresis)
                     return 0;
+
                 return -1;
 
             case 1:
-                if (filteredX < leftThreshold - laneHysteresis)
+                if (filteredX < leftBoundary - laneHysteresis)
                     return -1;
-                if (filteredX < rightThreshold - laneHysteresis)
+
+                if (filteredX < rightBoundary - laneHysteresis)
                     return 0;
+
                 return 1;
 
             default:
-                if (filteredX < leftThreshold - laneHysteresis)
+                if (filteredX < leftBoundary - laneHysteresis)
                     return -1;
-                if (filteredX > rightThreshold + laneHysteresis)
+
+                if (filteredX > rightBoundary + laneHysteresis)
                     return 1;
+
                 return 0;
         }
     }
 
-    void UpdateLane(float dt) {
+    int GetDesiredRow() {
+        // MediaPipe Y increases downwards.
+        // Jump and duck have independent boundaries, leaving
+        // a wider middle region between them.
+
+        if (CurrentRow == 0) {
+            if (filteredY > jumpYBoundary + rowHysteresis) {
+                if (filteredY > duckYBoundary + rowHysteresis)
+                    return 2;
+
+                return 1;
+            }
+
+            return 0;
+        }
+
+        if (CurrentRow == 2) {
+            if (filteredY < duckYBoundary - rowHysteresis) {
+                if (filteredY < jumpYBoundary - rowHysteresis)
+                    return 0;
+
+                return 1;
+            }
+
+            return 2;
+        }
+
+        if (filteredY < jumpYBoundary - rowHysteresis)
+            return 0;
+
+        if (filteredY > duckYBoundary + rowHysteresis)
+            return 2;
+
+        return 1;
+    }
+
+    void UpdateGrid(float dt) {
         int desiredLane = GetDesiredLane();
+        int desiredRow = GetDesiredRow();
 
-        if (desiredLane == CurrentLane) {
+        if (desiredLane == CurrentLane &&
+            desiredRow == CurrentRow) {
             candidateLane = CurrentLane;
-            laneCandidateElapsed = 0f;
+            candidateRow = CurrentRow;
+            gridCandidateElapsed = 0f;
             return;
         }
 
-        // Restart the dwell timer if the desired lane changes.
-        if (desiredLane != candidateLane) {
+        if (desiredLane != candidateLane ||
+            desiredRow != candidateRow) {
             candidateLane = desiredLane;
-            laneCandidateElapsed = 0f;
+            candidateRow = desiredRow;
+            gridCandidateElapsed = 0f;
         }
 
-        laneCandidateElapsed += dt;
+        gridCandidateElapsed += dt;
 
-        if (laneCandidateElapsed >= laneDwellTime) {
-            CurrentLane = candidateLane;
-            laneCandidateElapsed = 0f;
+        if (gridCandidateElapsed < gridDwellTime)
+            return;
+
+        int previousLane = CurrentLane;
+        int previousRow = CurrentRow;
+
+        CurrentLane = candidateLane;
+        CurrentRow = candidateRow;
+
+        gridCandidateElapsed = 0f;
+
+        if (CurrentLane != previousLane)
             LaneChanged?.Invoke(CurrentLane);
-        }
-    }
 
-    void UpdateJump() {
-        float rise = neutralHipY - filteredHipY;
-        bool aboveThreshold = rise > jumpRiseThreshold;
-
-        if (aboveThreshold &&
-            !wasAboveJumpThreshold &&
-            Time.time - lastJumpTime >= gestureCooldown) {
-            lastJumpTime = Time.time;
+        // Trigger once when entering the jump region.
+        if (CurrentRow == 0 && previousRow != 0)
             JumpDetected?.Invoke();
+
+        // Duck remains active while in the lower region.
+        bool shouldDuck = CurrentRow == 2;
+
+        if (shouldDuck != IsDucking) {
+            IsDucking = shouldDuck;
+            DuckChanged?.Invoke(IsDucking);
         }
-
-        wasAboveJumpThreshold = aboveThreshold;
-    }
-
-    void UpdateDuck() {
-        if (neutralTorso <= 0.01f)
-            return;
-
-        float torsoRatio = filteredTorso / neutralTorso;
-        bool duckNow = torsoRatio < duckRatioThreshold;
-
-        if (duckNow == IsDucking)
-            return;
-
-        if (duckNow &&
-            Time.time - lastDuckTime < gestureCooldown)
-            return;
-
-        if (duckNow)
-            lastDuckTime = Time.time;
-
-        IsDucking = duckNow;
-        DuckChanged?.Invoke(IsDucking);
     }
 }
