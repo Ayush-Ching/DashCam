@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour {
     
@@ -10,6 +11,7 @@ public class GameManager : MonoBehaviour {
     [SerializeField] private GameObject loseMenu;
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI gameOverText;
+    [SerializeField] private Toggle vSyncToggle;
 
     private bool isPaused;
     private bool isGameOver;
@@ -25,6 +27,9 @@ public class GameManager : MonoBehaviour {
         loseMenu.SetActive(false);
         score = 0;
         isGameOver = false;
+
+        vSyncToggle.isOn = QualitySettings.vSyncCount > 0;
+        vSyncToggle.onValueChanged.AddListener(SetVSync);
     }
 
     private void Update() {
@@ -39,11 +44,20 @@ public class GameManager : MonoBehaviour {
         }
     }
 
+    void OnDestroy() {
+        vSyncToggle.onValueChanged.RemoveListener(SetVSync);
+    }
+
     public void GameOver() {
         isGameOver = true;
         gameOverText.text = "FinalScore: " + Mathf.FloorToInt(score).ToString() + " m";
         Time.timeScale = 0f;
         loseMenu.SetActive(true);
+    }
+
+    public void SetVSync(bool enabled) {
+        Debug.Log("vsync : " + enabled.ToString());
+        QualitySettings.vSyncCount = enabled ? 1 : 0;
     }
 
     public void Pause() {
