@@ -5201,11 +5201,12 @@ MonoBehaviour:
   - {fileID: 2386747440492396178, guid: 046407dc58e46fa4c90a19447010979d, type: 3}
   - {fileID: 2386747440492396178, guid: 2d8aec669618201489b942e3f98761f5, type: 3}
   obstacleChunks:
-  - {fileID: 4289541242072887085, guid: 82c2c390ca6ea6e429e35cd4b843d89a, type: 3}
-  - {fileID: 4289541242072887085, guid: ac3ec45c9591c254abc9a9b67d7b9691, type: 3}
-  - {fileID: 4289541242072887085, guid: 13eb052df46bcc240a2dfbb679b2e8a7, type: 3}
-  - {fileID: 4289541242072887085, guid: 38787c5f79a5f7f4bacf44ef2ac3f983, type: 3}
-  - {fileID: 4289541242072887085, guid: 4ddf206cb0dccbc4a995829d0e5b22b6, type: 3}
+  - {fileID: 4289541242072887085, guid: 4585b1ef1dbf6a245ba41d6f69f77cdc, type: 3}
+  - {fileID: 4289541242072887085, guid: 7d7396f389cb1fb47be3ba035b3eabbd, type: 3}
+  - {fileID: 4289541242072887085, guid: 2440aa306c422be4d891d69d8a8dd6c1, type: 3}
+  - {fileID: 4289541242072887085, guid: 20f9b8b1cac69e94e949580feb314ccb, type: 3}
+  - {fileID: 4289541242072887085, guid: 5d5e430af557e1643af892bc598329e2, type: 3}
+  - {fileID: 4289541242072887085, guid: 84ed117c470baa54bb32df5d805b911e, type: 3}
 --- !u!1 &2096610436
 GameObject:
   m_ObjectHideFlags: 0

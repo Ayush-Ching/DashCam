@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 114006612497217974}
   - component: {fileID: 4289541242072887085}
   m_Layer: 0
-  m_Name: MobileObstacle4
+  m_Name: KeyObstacle4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
