@@ -3848,13 +3848,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76ff9156afb420048a9046b725e3f241, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minMoveSpeed: 10
-  maxMoveSpeed: 30
+  minMoveSpeed: 30
+  maxMoveSpeed: 100
   moveSpeedIncrementRate: 1
   roadWidth: 30
   frontThreshold: 1000
   backThreshold: -25
-  obstacleStartThreshold: 500
+  obstacleStartThreshold: 100
   obstacleSpeedGapFactor: 0.5
   roadChunks:
   - {fileID: 296111578630608437, guid: 293ae85a532abf647879ee4a968a96a5, type: 3}
