@@ -1,5 +1,6 @@
 
 using System;
+using TMPro;
 using UnityEngine;
 
 public class PoseGestureClassifier : MonoBehaviour {
@@ -51,6 +52,8 @@ public class PoseGestureClassifier : MonoBehaviour {
 
     [Header("Calibration")]
     public float calibrationTime = 1.5f;
+    [SerializeField] private TextMeshProUGUI calibrationUIText;
+    [SerializeField] private Animator calibrationAnimator;
 
     public event Action<int> LaneChanged;
     public event Action JumpDetected;
@@ -81,11 +84,17 @@ public class PoseGestureClassifier : MonoBehaviour {
     bool wasAboveJumpThreshold;
     bool poseWasValid;
 
+
+    private int calibratedAnimHash;
+
+
     void Awake() {
         if (bodyCentreUI != null && panelRect == null)
             panelRect = bodyCentreUI.parent as RectTransform;
 
         candidateLane = CurrentLane;
+
+        calibratedAnimHash = Animator.StringToHash("calibrated");
     }
 
     public void ProcessPose(
@@ -257,6 +266,11 @@ public class PoseGestureClassifier : MonoBehaviour {
             calibrationTorsoSum / calibrationSamples;
 
         IsCalibrated = neutralTorso > 0.01f;
+
+        if(IsCalibrated) {
+            calibrationUIText.text = "Calibrated Successfully!\nHave Fun!";
+            calibrationAnimator?.SetTrigger(calibratedAnimHash);
+        }
 
         Debug.Log(
             $"Pose calibrated: hipY={neutralHipY:F3}, " +
