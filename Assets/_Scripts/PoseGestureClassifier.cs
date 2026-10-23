@@ -24,35 +24,30 @@ public class PoseGestureClassifier : MonoBehaviour {
     public int CurrentRow { get; private set; } = 1;
 
     [Header("Lane boundaries")]
+    [Tooltip("Smaller values make lane switching easier.")]
     [Range(0.05f, 0.40f)]
-    public float laneBoundary = 0.18f;
+    public float laneBoundary = 0.12f;
 
     [Range(0f, 0.10f)]
-    public float laneHysteresis = 0.02f;
+    public float laneHysteresis = 0.015f;
+
+    public float laneDwellTime = 0.10f;
 
     [Header("Jump detection")]
-    [Tooltip("How far upward the tracked centre must move " +
-             "from its calibrated position to trigger a jump.")]
-    [Range(0.03f, 0.40f)]
-    public float jumpRiseThreshold = 0.10f;
+    [Tooltip("Upward hip movement needed to trigger a jump.")]
+    [Range(0.03f, 0.50f)]
+    public float jumpRiseThreshold = 0.12f;
 
-    [Tooltip("Minimum time between jump events.")]
-    public float jumpCooldown = 0.45f;
+    public float gestureCooldown = 0.65f;
 
-    [Header("Duck detection")]
-    [Tooltip("Duck when the tracked centre is this far below " +
-             "its calibrated position.")]
-    [Range(0.03f, 0.40f)]
-    public float duckDropThreshold = 0.16f;
-
-    [Header("Grid boundaries")]
-    [Range(0.0f, 0.10f)]
-    public float rowHysteresis = 0.02f;
-
-    public float gridDwellTime = 0.08f;
+    [Header("Duck / slide detection")]
+    [Tooltip("Duck when torso height becomes less than this " +
+             "fraction of its calibrated standing height.")]
+    [Range(0.20f, 0.98f)]
+    public float duckRatioThreshold = 0.78f;
 
     [Header("Smoothing")]
-    public float smoothing = 18f;
+    public float smoothing = 12f;
 
     [Header("Calibration")]
     public float calibrationTime = 1.5f;
@@ -66,27 +61,31 @@ public class PoseGestureClassifier : MonoBehaviour {
 
     float filteredX = 0.5f;
     float filteredY = 0.5f;
+    float filteredHipY = 0.5f;
+    float filteredTorso;
 
-    float neutralY = 0.5f;
+    float neutralHipY;
+    float neutralTorso;
+
     float calibrationElapsed;
-    float calibrationYSum;
+    float calibrationHipSum;
+    float calibrationTorsoSum;
     int calibrationSamples;
 
     int candidateLane;
-    int candidateRow;
-    float gridCandidateElapsed;
+    float laneCandidateElapsed;
 
     float lastJumpTime = -100f;
+    float lastDuckTime = -100f;
 
+    bool wasAboveJumpThreshold;
     bool poseWasValid;
-    bool wasJumping;
 
     void Awake() {
         if (bodyCentreUI != null && panelRect == null)
             panelRect = bodyCentreUI.parent as RectTransform;
 
         candidateLane = CurrentLane;
-        candidateRow = CurrentRow;
     }
 
     public void ProcessPose(
@@ -95,62 +94,86 @@ public class PoseGestureClassifier : MonoBehaviour {
         Vector2 leftHip,
         Vector2 rightHip,
         bool valid) {
-        // The MediaPipe adapter should set valid = true when
-        // the hips are available, even if the shoulders are not.
         if (!valid) {
             poseWasValid = false;
-            gridCandidateElapsed = 0f;
+            laneCandidateElapsed = 0f;
             return;
         }
 
         float dt = Mathf.Max(Time.deltaTime, 0.001f);
 
+        bool leftShoulderValid = IsValidLandmark(leftShoulder);
+        bool rightShoulderValid = IsValidLandmark(rightShoulder);
+        bool leftHipValid = IsValidLandmark(leftHip);
+        bool rightHipValid = IsValidLandmark(rightHip);
+
         bool shouldersValid =
-            IsValidLandmark(leftShoulder) &&
-            IsValidLandmark(rightShoulder);
+            leftShoulderValid && rightShoulderValid;
 
-        bool hipsValid =
-            IsValidLandmark(leftHip) &&
-            IsValidLandmark(rightHip);
+        bool hipsValid = leftHipValid && rightHipValid;
 
-        if (!hipsValid && !shouldersValid) {
+        if (!shouldersValid && !hipsValid) {
             poseWasValid = false;
-            gridCandidateElapsed = 0f;
+            laneCandidateElapsed = 0f;
             return;
         }
 
+        Vector2 shoulderCenter = Vector2.zero;
+        Vector2 hipCenter = Vector2.zero;
+
+        if (shouldersValid) {
+            shoulderCenter =
+                (leftShoulder + rightShoulder) * 0.5f;
+        }
+
+        if (hipsValid) {
+            hipCenter = (leftHip + rightHip) * 0.5f;
+        }
+
+        // Preserve the old jump and duck mechanics whenever
+        // the relevant landmarks are visible.
+        float rawHipY;
+        float rawTorso;
+
+        if (hipsValid) {
+            rawHipY = hipCenter.y;
+        }
+        else {
+            // Fallback if hips disappear: approximate hip height
+            // using the shoulders and the previous torso height.
+            rawHipY = filteredHipY;
+        }
+
+        if (shouldersValid && hipsValid) {
+            rawTorso = Mathf.Abs(
+                hipCenter.y - shoulderCenter.y);
+        }
+        else {
+            // Keep the last known torso measurement if shoulders
+            // or hips temporarily disappear.
+            rawTorso = filteredTorso;
+        }
+
+        // Body centre for the preview marker and lane detection.
         Vector2 bodyCenter;
 
         if (shouldersValid && hipsValid) {
-            Vector2 shoulderCenter =
-                (leftShoulder + rightShoulder) * 0.5f;
-
-            Vector2 hipCenter =
-                (leftHip + rightHip) * 0.5f;
-
             bodyCenter = (shoulderCenter + hipCenter) * 0.5f;
         }
         else if (hipsValid) {
-            // Fallback when the upper body leaves the frame.
-            // Estimate the centre above the hips.
-            Vector2 hipCenter =
-                (leftHip + rightHip) * 0.5f;
-
             bodyCenter = new Vector2(
                 hipCenter.x,
-                hipCenter.y - 0.12f
-            );
+                hipCenter.y - 0.12f);
         }
         else {
-            // If hips are missing but shoulders remain visible,
-            // use the shoulder midpoint.
-            bodyCenter =
-                (leftShoulder + rightShoulder) * 0.5f;
+            bodyCenter = shoulderCenter;
         }
 
         if (!poseWasValid) {
             filteredX = bodyCenter.x;
             filteredY = bodyCenter.y;
+            filteredHipY = rawHipY;
+            filteredTorso = rawTorso;
             poseWasValid = true;
         }
         else {
@@ -158,16 +181,19 @@ public class PoseGestureClassifier : MonoBehaviour {
 
             filteredX = Mathf.Lerp(filteredX, bodyCenter.x, a);
             filteredY = Mathf.Lerp(filteredY, bodyCenter.y, a);
+            filteredHipY = Mathf.Lerp(filteredHipY, rawHipY, a);
+            filteredTorso = Mathf.Lerp(
+                filteredTorso, rawTorso, a);
         }
 
         float displayX = mirrorX ? 1f - filteredX : filteredX;
 
-        BodyCenterNormalized = new Vector2(displayX, filteredY);
+        BodyCenterNormalized = new Vector2(
+            displayX, filteredY);
 
         BodyCenterPixels = new Vector2(
             displayX * panelWidth,
-            filteredY * panelHeight
-        );
+            filteredY * panelHeight);
 
         UpdateBodyCentreUI();
 
@@ -176,13 +202,13 @@ public class PoseGestureClassifier : MonoBehaviour {
             return;
         }
 
-        UpdateGrid(dt);
+        UpdateLane(dt);
         UpdateJump();
+        UpdateDuck();
+        UpdateRow();
     }
 
     bool IsValidLandmark(Vector2 point) {
-        // Normalised coordinates can sometimes be outside the
-        // frame. Allow a small margin for landmarks near edges.
         return !float.IsNaN(point.x) &&
                !float.IsNaN(point.y) &&
                !float.IsInfinity(point.x) &&
@@ -198,33 +224,43 @@ public class PoseGestureClassifier : MonoBehaviour {
         Rect rect = panelRect.rect;
 
         Vector2 localPoint = new Vector2(
-            Mathf.Lerp(rect.xMin, rect.xMax, BodyCenterNormalized.x),
-            Mathf.Lerp(rect.yMax, rect.yMin, BodyCenterNormalized.y)
-        );
+            Mathf.Lerp(
+                rect.xMin, rect.xMax,
+                BodyCenterNormalized.x),
+            Mathf.Lerp(
+                rect.yMax, rect.yMin,
+                BodyCenterNormalized.y));
 
         if (bodyCentreUI.parent == panelRect) {
             bodyCentreUI.anchoredPosition = localPoint;
         }
         else {
-            Vector3 worldPoint = panelRect.TransformPoint(localPoint);
-            bodyCentreUI.position = worldPoint;
+            bodyCentreUI.position =
+                panelRect.TransformPoint(localPoint);
         }
     }
 
     void Calibrate(float dt) {
         calibrationElapsed += dt;
-        calibrationYSum += filteredY;
+        calibrationHipSum += filteredHipY;
+        calibrationTorsoSum += filteredTorso;
         calibrationSamples++;
 
         if (calibrationElapsed < calibrationTime ||
             calibrationSamples == 0)
             return;
 
-        neutralY = calibrationYSum / calibrationSamples;
-        IsCalibrated = true;
+        neutralHipY =
+            calibrationHipSum / calibrationSamples;
+
+        neutralTorso =
+            calibrationTorsoSum / calibrationSamples;
+
+        IsCalibrated = neutralTorso > 0.01f;
 
         Debug.Log(
-            $"Pose calibrated. Neutral Y={neutralY:F3}");
+            $"Pose calibrated: hipY={neutralHipY:F3}, " +
+            $"torso={neutralTorso:F3}");
     }
 
     int GetDesiredLane() {
@@ -261,72 +297,77 @@ public class PoseGestureClassifier : MonoBehaviour {
         }
     }
 
-    int GetDesiredRow() {
-        float rise = neutralY - filteredY;
-        float drop = filteredY - neutralY;
-
-        if (rise > jumpRiseThreshold)
-            return 0;
-
-        if (drop > duckDropThreshold)
-            return 2;
-
-        return 1;
-    }
-
-    void UpdateGrid(float dt) {
+    void UpdateLane(float dt) {
         int desiredLane = GetDesiredLane();
-        int desiredRow = GetDesiredRow();
 
-        if (desiredLane == CurrentLane &&
-            desiredRow == CurrentRow) {
+        if (desiredLane == CurrentLane) {
             candidateLane = CurrentLane;
-            candidateRow = CurrentRow;
-            gridCandidateElapsed = 0f;
+            laneCandidateElapsed = 0f;
             return;
         }
 
-        if (desiredLane != candidateLane ||
-            desiredRow != candidateRow) {
+        if (desiredLane != candidateLane) {
             candidateLane = desiredLane;
-            candidateRow = desiredRow;
-            gridCandidateElapsed = 0f;
+            laneCandidateElapsed = 0f;
         }
 
-        gridCandidateElapsed += dt;
+        laneCandidateElapsed += dt;
 
-        if (gridCandidateElapsed < gridDwellTime)
-            return;
-
-        int previousLane = CurrentLane;
-        int previousRow = CurrentRow;
-
-        CurrentLane = candidateLane;
-        CurrentRow = candidateRow;
-
-        gridCandidateElapsed = 0f;
-
-        if (CurrentLane != previousLane)
+        if (laneCandidateElapsed >= laneDwellTime) {
+            CurrentLane = candidateLane;
+            laneCandidateElapsed = 0f;
             LaneChanged?.Invoke(CurrentLane);
-
-        bool shouldDuck = CurrentRow == 2;
-
-        if (shouldDuck != IsDucking) {
-            IsDucking = shouldDuck;
-            DuckChanged?.Invoke(IsDucking);
         }
     }
 
     void UpdateJump() {
-        bool jumping = CurrentRow == 0;
+        // Original working mechanic: detect upward hip movement
+        // relative to the neutral hip position.
+        float rise = neutralHipY - filteredHipY;
 
-        if (jumping &&
-            !wasJumping &&
-            Time.time - lastJumpTime >= jumpCooldown) {
+        bool aboveThreshold = rise > jumpRiseThreshold;
+
+        if (aboveThreshold &&
+            !wasAboveJumpThreshold &&
+            Time.time - lastJumpTime >= gestureCooldown) {
             lastJumpTime = Time.time;
             JumpDetected?.Invoke();
         }
 
-        wasJumping = jumping;
+        wasAboveJumpThreshold = aboveThreshold;
+    }
+
+    void UpdateDuck() {
+        // Original working mechanic: detect a reduction in torso
+        // height compared with the calibrated standing posture.
+        if (neutralTorso <= 0.01f)
+            return;
+
+        float torsoRatio = filteredTorso / neutralTorso;
+        bool duckNow = torsoRatio < duckRatioThreshold;
+
+        if (duckNow == IsDucking)
+            return;
+
+        if (duckNow &&
+            Time.time - lastDuckTime < gestureCooldown)
+            return;
+
+        if (duckNow)
+            lastDuckTime = Time.time;
+
+        IsDucking = duckNow;
+        DuckChanged?.Invoke(IsDucking);
+    }
+
+    void UpdateRow() {
+        // Rows are informational; jump and duck events use
+        // the restored, independent gesture classifiers.
+        if (IsDucking)
+            CurrentRow = 2;
+        else if (neutralHipY - filteredHipY > jumpRiseThreshold)
+            CurrentRow = 0;
+        else
+            CurrentRow = 1;
     }
 }

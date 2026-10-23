@@ -838,13 +838,12 @@ MonoBehaviour:
   panelRect: {fileID: 938977090}
   bodyCentreUI: {fileID: 985290423}
   mirrorX: 0
-  laneBoundary: 0.18
+  laneBoundary: 0.05
   laneHysteresis: 0.02
+  laneDwellTime: 0.1
   jumpRiseThreshold: 0.03
-  jumpCooldown: 0.45
-  duckDropThreshold: 0.05
-  rowHysteresis: 0.025
-  gridDwellTime: 0.12
+  gestureCooldown: 0.65
+  duckRatioThreshold: 0.8
   smoothing: 12
   calibrationTime: 1.5
 --- !u!4 &481067392
