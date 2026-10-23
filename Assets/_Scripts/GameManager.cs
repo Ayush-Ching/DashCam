@@ -18,8 +18,11 @@ public class GameManager : MonoBehaviour {
 
     private float score;
 
+    private const string VSyncKey = "VSyncCount";
+
     private void Awake() {
         Instance = this;
+
     }
 
     private void Start() {
@@ -28,7 +31,10 @@ public class GameManager : MonoBehaviour {
         score = 0;
         isGameOver = false;
 
-        vSyncToggle.isOn = QualitySettings.vSyncCount > 0;
+        int savedVsync = PlayerPrefs.GetInt(VSyncKey, 1);
+        QualitySettings.vSyncCount = savedVsync;
+        vSyncToggle.isOn = savedVsync > 0;
+
         vSyncToggle.onValueChanged.AddListener(SetVSync);
     }
 
@@ -45,7 +51,7 @@ public class GameManager : MonoBehaviour {
     }
 
     void OnDestroy() {
-        vSyncToggle.onValueChanged.RemoveListener(SetVSync);
+        vSyncToggle?.onValueChanged.RemoveListener(SetVSync);
     }
 
     public void GameOver() {
@@ -56,8 +62,12 @@ public class GameManager : MonoBehaviour {
     }
 
     public void SetVSync(bool enabled) {
-        Debug.Log("vsync : " + enabled.ToString());
-        QualitySettings.vSyncCount = enabled ? 1 : 0;
+        int value = enabled ? 1 : 0;
+
+        QualitySettings.vSyncCount = value;
+
+        PlayerPrefs.SetInt(VSyncKey, value);
+        PlayerPrefs.Save();
     }
 
     public void Pause() {

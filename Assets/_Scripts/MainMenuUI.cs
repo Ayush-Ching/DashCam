@@ -3,6 +3,10 @@ using UnityEngine.SceneManagement;
 
 public class MainMenuUI : MonoBehaviour {
 
+    private void Start() {
+        QualitySettings.vSyncCount = 1;
+    }
+
     public void PlayCam() {
         SceneManager.LoadScene("CamScene");
     }
