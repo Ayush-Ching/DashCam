@@ -3,8 +3,12 @@ using UnityEngine.SceneManagement;
 
 public class MainMenuUI : MonoBehaviour {
 
-    public void PlayGame() {
-        SceneManager.LoadScene("GameScene");
+    public void PlayCam() {
+        SceneManager.LoadScene("CamScene");
+    }
+
+    public void PlayKey() {
+        SceneManager.LoadScene("KeyScene");
     }
 
     public void QuitGame() {

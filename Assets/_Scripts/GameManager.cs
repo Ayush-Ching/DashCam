@@ -67,4 +67,12 @@ public class GameManager : MonoBehaviour {
         SceneManager.LoadScene("MainMenu");
     }
 
+    public bool IsPaused() {
+        return isPaused;
+    }
+
+    public bool IsGameOver() {
+        return isGameOver;
+    }
+
 }

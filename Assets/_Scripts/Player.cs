@@ -28,12 +28,16 @@ public class Player : MonoBehaviour {
     private int rollHash;
 
     private void OnEnable() {
+        if (classifier == null) return;
+
         classifier.LaneChanged += OnLaneChanged;
         classifier.JumpDetected += OnJump;
         classifier.DuckChanged += OnDuckChanged;
     }
 
     private void OnDisable() {
+        if (classifier == null) return;
+
         classifier.LaneChanged -= OnLaneChanged;
         classifier.JumpDetected -= OnJump;
         classifier.DuckChanged -= OnDuckChanged;
@@ -56,8 +60,10 @@ public class Player : MonoBehaviour {
     }
 
     private void Update() {
-        if (GameInput.Instance.WasLeftPressed()) currentLane = Mathf.Max(-1, currentLane - 1);
-        if (GameInput.Instance.WasRightPressed()) currentLane = Mathf.Min(1, currentLane + 1);
+        if (!GameManager.Instance.IsPaused() && !GameManager.Instance.IsGameOver()) {
+            if (GameInput.Instance.WasLeftPressed()) currentLane = Mathf.Max(-1, currentLane - 1);
+            if (GameInput.Instance.WasRightPressed()) currentLane = Mathf.Min(1, currentLane + 1);
+        }
 
         if (GameInput.Instance.WasJumpPressed()) Jump();
         if (GameInput.Instance.WasRollPressed()) Roll();
@@ -120,7 +126,8 @@ public class Player : MonoBehaviour {
     }
 
     public void Jump() {
-        if(!isGrounded) return;
+        if (GameManager.Instance.IsPaused() || GameManager.Instance.IsGameOver()) return;
+        if (!isGrounded) return;
 
         animator.SetTrigger(jumpHash);
 
@@ -135,6 +142,7 @@ public class Player : MonoBehaviour {
     }
 
     private void Roll() {
+        if (GameManager.Instance.IsPaused() || GameManager.Instance.IsGameOver()) return;
         if (isRolling) return;
 
         animator.SetTrigger(rollHash);
