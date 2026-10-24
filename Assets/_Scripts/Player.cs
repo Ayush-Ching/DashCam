@@ -8,11 +8,15 @@ public class Player : MonoBehaviour {
     [SerializeField] private float jumpForce = 10f;
     [SerializeField] private float gravityMultiplier = 3f;
     [SerializeField] private float rollDuration = 1f;
+    [SerializeField] private float inputBufferTime = 0.15f;
 
     [Space, Header("References")]
     [SerializeField] private GroundCheck groundCheck;
     [SerializeField] private Animator animator;
     [SerializeField] private PoseGestureClassifier classifier;
+
+    private float jumpBufferTimer;
+    private float rollBufferTimer;
 
     private int currentLane = 0;
     private bool isGrounded;
@@ -65,10 +69,19 @@ public class Player : MonoBehaviour {
             if (GameInput.Instance.WasRightPressed()) currentLane = Mathf.Min(1, currentLane + 1);
         }
 
-        if (GameInput.Instance.WasJumpPressed()) Jump();
-        if (GameInput.Instance.WasRollPressed()) Roll();
+        //if (GameInput.Instance.WasJumpPressed()) Jump();
+        //if (GameInput.Instance.WasRollPressed()) Roll();
 
-        if(isRolling) {
+        if (GameInput.Instance.WasJumpPressed()) jumpBufferTimer = inputBufferTime;
+        else jumpBufferTimer = Mathf.Max(jumpBufferTimer - Time.deltaTime, -1f);
+
+        if (GameInput.Instance.WasRollPressed()) rollBufferTimer = inputBufferTime;
+        else rollBufferTimer = Mathf.Max(rollBufferTimer - Time.deltaTime, -1f);
+
+        if (jumpBufferTimer > 0f) Jump();
+        if (rollBufferTimer > 0f) Roll();
+
+        if (isRolling) {
             rollTimer += Time.deltaTime;
             if(rollTimer > rollDuration) {
                 rollTimer = 0;
@@ -99,21 +112,14 @@ public class Player : MonoBehaviour {
     }
 
     private void OnLaneChanged(int lane) {
-        // lane: -1 = left, 0 = centre, +1 = right
-        // Call your existing lane movement method here.
-        Debug.Log($"Target lane: {lane}");
         currentLane = lane;
     }
 
     private void OnJump() {
-        // Call your existing grounded jump method here.
-        Debug.Log("Jump detected");
         Jump();
     }
 
     private void OnDuckChanged(bool ducking) {
-        // true = begin slide; false = end slide.
-        Debug.Log($"Ducking: {ducking}");
         Roll();
     }
 
@@ -128,6 +134,8 @@ public class Player : MonoBehaviour {
     public void Jump() {
         if (GameManager.Instance.IsPaused() || GameManager.Instance.IsGameOver()) return;
         if (!isGrounded) return;
+
+        jumpBufferTimer = -1f;
 
         animator.SetTrigger(jumpHash);
 
@@ -144,6 +152,8 @@ public class Player : MonoBehaviour {
     private void Roll() {
         if (GameManager.Instance.IsPaused() || GameManager.Instance.IsGameOver()) return;
         if (isRolling) return;
+
+        rollBufferTimer = -1f;
 
         animator.SetTrigger(rollHash);
 
