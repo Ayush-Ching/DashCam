@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -11,6 +12,7 @@ public class GameManager : MonoBehaviour {
     [SerializeField] private GameObject loseMenu;
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI gameOverText;
+    [SerializeField] private Slider musicSlider;
     [SerializeField] private Toggle vSyncToggle;
 
     private bool isPaused;
@@ -19,6 +21,7 @@ public class GameManager : MonoBehaviour {
     private float score;
 
     private const string VSyncKey = "VSyncCount";
+    private const string MusicKey = "MusicVolume";
 
     private void Awake() {
         Instance = this;
@@ -31,10 +34,13 @@ public class GameManager : MonoBehaviour {
         score = 0;
         isGameOver = false;
 
+        musicSlider.value = PlayerPrefs.GetFloat(MusicKey, 1f);
+
         int savedVsync = PlayerPrefs.GetInt(VSyncKey, 1);
         QualitySettings.vSyncCount = savedVsync;
         vSyncToggle.isOn = savedVsync > 0;
 
+        musicSlider.onValueChanged.AddListener(SetMusicVolume);
         vSyncToggle.onValueChanged.AddListener(SetVSync);
     }
 
@@ -52,6 +58,7 @@ public class GameManager : MonoBehaviour {
 
     void OnDestroy() {
         vSyncToggle?.onValueChanged.RemoveListener(SetVSync);
+        musicSlider?.onValueChanged.RemoveListener(SetMusicVolume);
     }
 
     public void GameOver() {
@@ -67,6 +74,11 @@ public class GameManager : MonoBehaviour {
         QualitySettings.vSyncCount = value;
 
         PlayerPrefs.SetInt(VSyncKey, value);
+        PlayerPrefs.Save();
+    }
+
+    public void SetMusicVolume(float volume) {
+        PlayerPrefs.SetFloat(MusicKey, volume);
         PlayerPrefs.Save();
     }
 

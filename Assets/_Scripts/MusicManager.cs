@@ -13,6 +13,8 @@ public class MusicManager : MonoBehaviour {
     private AudioSource audioSource;
     private SceneName currentScene;
 
+    private const string MusicVolumeKey = "MusicVolume";
+
     private void Awake() {
         audioSource = GetComponent<AudioSource>();
     }
@@ -24,6 +26,7 @@ public class MusicManager : MonoBehaviour {
         currentScene = SceneName.MainMenu;
         audioSource.clip = mainMenuTrack;
         audioSource.Play();
+        audioSource.volume = PlayerPrefs.GetFloat(MusicVolumeKey, 1f);
     }
 
     private void Update() {
@@ -31,7 +34,7 @@ public class MusicManager : MonoBehaviour {
             if(GetCurrentSceneName() == SceneName.MainMenu) {
                 currentScene = SceneName.MainMenu;
                 audioSource.clip = mainMenuTrack;
-                audioSource.volume = 1f;
+                audioSource.volume = PlayerPrefs.GetFloat(MusicVolumeKey, 1f);
                 audioSource.Play();
             }
             else {
@@ -43,8 +46,10 @@ public class MusicManager : MonoBehaviour {
 
         if(currentScene == SceneName.GameScene) {
             if(GameManager.Instance != null) {
-                if (GameManager.Instance.IsPaused() || GameManager.Instance.IsGameOver()) audioSource.volume = 0.5f;
-                else audioSource.volume = 1f;
+                if (GameManager.Instance.IsPaused() || GameManager.Instance.IsGameOver()) {
+                    audioSource.volume = 0.5f * PlayerPrefs.GetFloat(MusicVolumeKey, 1f);
+                } 
+                else audioSource.volume = PlayerPrefs.GetFloat(MusicVolumeKey, 1f);
             }
         }
     }
