@@ -5567,12 +5567,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minMoveSpeed: 10
   maxMoveSpeed: 30
-  moveSpeedIncrementRate: 1
+  moveSpeedIncrementRate: 0.5
   roadWidth: 30
   frontThreshold: 1000
   backThreshold: -25
   obstacleStartThreshold: 300
-  obstacleSpeedGapFactor: 0.5
+  obstacleSpeedGapFactor: 0.7
   roadChunks:
   - {fileID: 296111578630608437, guid: 293ae85a532abf647879ee4a968a96a5, type: 3}
   leftEnvChunks:

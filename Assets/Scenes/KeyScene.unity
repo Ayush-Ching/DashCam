@@ -3971,7 +3971,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   minMoveSpeed: 30
   maxMoveSpeed: 100
-  moveSpeedIncrementRate: 1
+  moveSpeedIncrementRate: 0.7
   roadWidth: 30
   frontThreshold: 1000
   backThreshold: -25
