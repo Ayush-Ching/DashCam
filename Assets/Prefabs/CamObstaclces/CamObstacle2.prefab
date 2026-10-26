@@ -48,6 +48,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   length: 100
+  obstacles:
+  - {fileID: 4088555818503231024}
+  - {fileID: 3451261275953939580}
+  - {fileID: 7102834913578326887}
   trucks: []
 --- !u!1001 &982627168222878622
 PrefabInstance:

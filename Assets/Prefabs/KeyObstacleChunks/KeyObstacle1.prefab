@@ -48,6 +48,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   length: 60
+  obstacles:
+  - {fileID: 1443808141588437423}
+  - {fileID: 7829123259032724721}
+  - {fileID: 5952195136505169098}
   trucks:
   - {fileID: 4040408209499957208}
 --- !u!1001 &279562516065876541

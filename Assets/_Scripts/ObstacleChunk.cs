@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class ObstacleChunk : EnvChunk {
 
+    [SerializeField] private Transform[] obstacles;
     [SerializeField] private Truck[] trucks;
 
     protected float lengthFactor = 1f;
@@ -9,10 +10,8 @@ public class ObstacleChunk : EnvChunk {
     private void Start() {
         lengthFactor = EnvSpawner.Instance.GetObstacleLengthFactor();
 
-        foreach(Transform child in GetComponentsInChildren<Transform>()) {
-            if(child == transform) continue;
-
-            child.transform.localPosition = new Vector3(child.transform.localPosition.x, child.transform.localPosition.y, child.transform.localPosition.z * lengthFactor);
+        foreach(Transform obstacle in obstacles) {
+            obstacle.transform.localPosition = new Vector3(obstacle.transform.localPosition.x, obstacle.transform.localPosition.y, obstacle.transform.localPosition.z * lengthFactor);
         }
 
         foreach(Truck truck in trucks) {
