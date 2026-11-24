@@ -4,7 +4,7 @@ An alternate (more difficult) keyboard only mode is also available. In the keybo
 
 Use the escape key to pause and access the settings panel.
 
-It uses [MediaPipeUnityPlugin](https://github.com/homuler/MediaPipeUnityPlugin)
+Made in `Unity 6000.0.69f1` and uses [MediaPipeUnityPlugin](https://github.com/homuler/MediaPipeUnityPlugin)
 
 [![Watch the video](https://img.youtube.com/vi/R9lzvXaNbyw/maxresdefault.jpg)](https://www.youtube.com/watch?v=R9lzvXaNbyw)
 
